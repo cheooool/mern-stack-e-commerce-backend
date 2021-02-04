@@ -12,4 +12,4 @@ const categorySchema = mongoose.Schema({
   },
 });
 
-exports.Category = mongoose.model('category', categorySchema);
+exports.Category = mongoose.model('Category', categorySchema);

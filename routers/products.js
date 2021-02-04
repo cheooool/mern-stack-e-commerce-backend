@@ -2,6 +2,7 @@ const { Product } = require('../models/product');
 const express = require('express');
 const { Category } = require('../models/category');
 const router = express.Router();
+const mongoose = require('mongoose');
 
 router.get(`/`, async (req, res) => {
   try {
@@ -25,8 +26,7 @@ router.get(`/`, async (req, res) => {
 router.get(`/:id`, async (req, res) => {
   try {
     const { id } = req.params;
-    const findProduct = await Product.findById(id);
-
+    const findProduct = await Product.findById(id).populate('category');
     if (!findProduct) {
       return res.status(404).json({
         success: false,
@@ -91,6 +91,86 @@ router.post(`/`, async (req, res) => {
     return res.status(201).send(newProduct);
   } catch (error) {
     return res.status(500).send(error);
+  }
+});
+
+router.put(`/:id`, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (mongoose.isValidObjectId(id)) {
+      return res.status(404).send('존재하지 않는 상품 id 입니다.');
+    }
+
+    const {
+      name,
+      description,
+      richDescription,
+      image,
+      brand,
+      price,
+      category,
+      countInStock,
+      rating,
+      isFeatured,
+      dateCreated,
+    } = req.body;
+
+    const findCategory = await Category.findById(category);
+
+    if (!findCategory) {
+      return res.status(400).send('Invalid Category');
+    }
+
+    const updateProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        name,
+        description,
+        richDescription,
+        image,
+        brand,
+        price,
+        category,
+        countInStock,
+        rating,
+        isFeatured,
+        dateCreated,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updateProduct) {
+      return res.status(400).json({
+        success: false,
+        message: '상품정보 변경에 실패했습니다.',
+      });
+    }
+    return res.status(200).send(updateProduct);
+  } catch (error) {
+    return res.status(500).json({
+      error,
+    });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const removeProduct = await Product.findByIdAndRemove(id);
+    if (!removeProduct) {
+      return res.status(404).json({
+        success: false,
+        message: '존재하지 않는 상품입니다.',
+      });
+    }
+    return res.status(200).send('상품이 제거되었습니다.');
+  } catch (error) {
+    return res.status(500).json({
+      error,
+    });
   }
 });
 
