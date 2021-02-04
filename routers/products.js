@@ -174,4 +174,40 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/get/count', async (req, res) => {
+  try {
+    const productCount = await Product.countDocuments((count) => count);
+    // count 메소드는 최신버전에서는 사용되지 않는다.
+    // const productCount = await Product.count((count) => count);
+    if (!productCount) {
+      res.status(500).json({ success: false });
+    }
+    res.send({
+      productCount: productCount,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error,
+    });
+  }
+});
+
+router.get('/get/featured/:count', async (req, res) => {
+  try {
+    const count = req.params.count ? req.params.count : 0;
+    const featureProduct = await Product.find({ isFeatured: true }).limit(
+      +count
+    );
+
+    if (!featureProduct) {
+      res.status(500).json({ success: false });
+    }
+    res.send(featureProduct);
+  } catch (error) {
+    return res.status(500).json({
+      error,
+    });
+  }
+});
+
 module.exports = router;
