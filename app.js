@@ -9,6 +9,7 @@ require('dotenv/config');
 const api = process.env.API_URL;
 
 const productsRouter = require('./routers/products');
+const categoriesRouter = require('./routers/categoires');
 
 // middleware
 app.use(bodyParser.json());
@@ -18,6 +19,7 @@ app.options('*', cors());
 
 // Routers
 app.use(`${api}/products`, productsRouter);
+app.use(`${api}/categories`, categoriesRouter);
 
 mongoose
   .connect(process.env.CONNECTION_STRING, {

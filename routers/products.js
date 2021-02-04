@@ -3,35 +3,49 @@ const express = require('express');
 const router = express.Router();
 
 router.get(`/`, async (req, res) => {
-  const productList = await Product.find();
+  try {
+    const productList = await Product.find();
 
-  if (!productList) {
-    res.status(500).json({
+    if (!productList) {
+      return res.status(404).json({
+        success: false,
+        message: '등록된 상품이 없습니다.',
+      });
+    }
+    return res.send(productList);
+  } catch (error) {
+    return res.status(500).json({
       success: false,
+      error,
     });
   }
-  res.send(productList);
 });
 
-router.post(`/`, (req, res) => {
-  const { name, image, countInStock } = req.body;
-  const product = new Product({
-    name,
-    image,
-    countInStock,
-  });
-
-  product
-    .save()
-    .then((createdProduct) => {
-      res.status(201).json(createdProduct);
-    })
-    .catch((err) => {
-      res.status(500).json({
-        error: err,
-        success: false,
-      });
+router.post(`/`, async (req, res) => {
+  try {
+    const { name, image, countInStock } = req.body;
+    const product = new Product({
+      name,
+      image,
+      countInStock,
     });
+
+    const newProduct = product.save();
+
+    if (!newProduct) {
+      res.status(400).json({
+        success: false,
+        message: '상품을 생성하지 못했습니다.',
+      });
+    }
+
+    return res.status(201).send(newProduct);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      errror,
+    });
+  }
 });
 
 module.exports = router;
