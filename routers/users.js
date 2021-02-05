@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 
 router.get('/', async (req, res) => {
   try {
-    const userList = await User.find();
+    const userList = await User.find().select('-passwordHash');
 
     if (!userList) {
       return res.status(500).json({
@@ -14,6 +14,26 @@ router.get('/', async (req, res) => {
     }
 
     return res.status(200).send(userList);
+  } catch (error) {
+    return res.status(500).json({
+      error,
+    });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const findUser = await User.findById(id).select('-passwordHash');
+
+    if (!findUser) {
+      return res.status(404).json({
+        success: false,
+        message: '유저 정보를 찾을 수 없습니다.',
+      });
+    }
+
+    return res.status(200).send(findUser);
   } catch (error) {
     return res.status(500).json({
       error,
