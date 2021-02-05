@@ -2,6 +2,7 @@ const { User } = require('../models/user');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 router.get('/', async (req, res) => {
   try {
@@ -78,6 +79,36 @@ router.post('/', async (req, res) => {
     }
 
     return res.status(201).send(newUser);
+  } catch (error) {
+    return res.status(500).json({
+      error,
+    });
+  }
+});
+
+router.post('/login', async (req, res) => {
+  try {
+    const findUser = await User.findOne({ email: req.body.email });
+    if (!findUser) {
+      return res.status(400).send('유저 정보를 찾지못했습니다.');
+    }
+    if (
+      findUser &&
+      bcrypt.compareSync(req.body.password, findUser.passwordHash)
+    ) {
+      const token = jwt.sign(
+        {
+          userId: findUser._id,
+        },
+        process.env.SECRET,
+        {
+          expiresIn: '1d',
+        }
+      );
+      return res.status(200).send({ user: findUser.email, token: token });
+    } else {
+      return res.status(400).send('이메일 또는 비밀번호가 잘못되었습니다.');
+    }
   } catch (error) {
     return res.status(500).json({
       error,
