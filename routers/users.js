@@ -99,6 +99,7 @@ router.post('/login', async (req, res) => {
       const token = jwt.sign(
         {
           userId: findUser._id,
+          isAdmin: findUser.isAdmin,
         },
         process.env.SECRET,
         {
@@ -109,6 +110,43 @@ router.post('/login', async (req, res) => {
     } else {
       return res.status(400).send('이메일 또는 비밀번호가 잘못되었습니다.');
     }
+  } catch (error) {
+    return res.status(500).json({
+      error,
+    });
+  }
+});
+
+router.get('/get/count', async (req, res) => {
+  try {
+    const userCount = await User.countDocuments((count) => count);
+    // count 메소드는 최신버전에서는 사용되지 않는다.
+    // const userCount = await Product.count((count) => count);
+    if (!userCount) {
+      res.status(500).json({ success: false });
+    }
+    res.send({
+      userCount: userCount,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error,
+    });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const removeUser = await User.findByIdAndRemove(id);
+    if (!removeUser) {
+      return res.status(404).json({
+        success: false,
+        message: '존재하지 않는 사용자입니다.',
+      });
+    }
+    return res.status(200).send('사용자가 제거되었습니다.');
   } catch (error) {
     return res.status(500).json({
       error,
