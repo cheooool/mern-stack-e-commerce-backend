@@ -84,7 +84,6 @@ router.put('/:id', async (req, res) => {
         message: '카테고리 변경에 실패했습니다.',
       });
     }
-    console.log(category);
     return res.status(200).send(category);
   } catch (error) {
     return res.status(500).json({

@@ -22,10 +22,12 @@ const api = process.env.API_URL;
 const productsRouter = require('./routers/products');
 const categoriesRouter = require('./routers/categoires');
 const userRouter = require('./routers/users');
+const orderRouter = require('./routers/orders');
 
 app.use(`${api}/products`, productsRouter);
 app.use(`${api}/categories`, categoriesRouter);
 app.use(`${api}/users`, userRouter);
+app.use(`${api}/orders`, orderRouter);
 
 mongoose
   .connect(process.env.CONNECTION_STRING, {
