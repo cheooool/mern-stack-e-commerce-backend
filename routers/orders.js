@@ -49,7 +49,6 @@ router.post('/', async (req, res) => {
       country,
       phone,
       status,
-      totalPrice,
       user,
       dateOrdered,
     } = req.body;
@@ -67,6 +66,21 @@ router.post('/', async (req, res) => {
       })
     );
     const orderItemsIdsResolved = await orderItemsIds;
+
+    // 상품 총 금액 계산
+    const totalPrices = await Promise.all(
+      orderItemsIdsResolved.map(async (orderItemId) => {
+        const orderItem = await OrderItem.findById(orderItemId).populate(
+          'product',
+          'price'
+        );
+        const totalPrice = orderItem.product.price * orderItem.quantity;
+        return totalPrice;
+      })
+    );
+
+    console.log(totalPrices);
+    const totalPrice = totalPrices.reduce((a, b) => a + b, 0);
 
     const newOrder = new Order({
       orderItems: orderItemsIdsResolved,
