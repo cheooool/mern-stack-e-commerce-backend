@@ -99,4 +99,43 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.put('/:id', async (req, res) => {
+  const updateOrder = await Order.findByIdAndUpdate(
+    req.params.id,
+    {
+      status: req.body.status,
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (!updateOrder) {
+    return res.status(400).send('주문내역 변경에 실패했습니다.');
+  }
+
+  return res.status(200).send(updateOrder);
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const removeOrder = await Order.findByIdAndRemove(req.params.id);
+
+    if (!removeOrder) {
+      return res.status(404).json({
+        success: false,
+        message: '주문내역을 찾을 수 없습니다.',
+      });
+    }
+
+    await removeOrder.orderItems.map(async (orderItemId) => {
+      await OrderItem.findByIdAndRemove(orderItemId);
+    });
+
+    res.status(200).send('주문내역이 삭제되었습니다.');
+  } catch (error) {
+    return res.status(500).json({ success: false, error });
+  }
+});
+
 module.exports = router;
