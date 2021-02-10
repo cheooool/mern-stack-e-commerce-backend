@@ -152,4 +152,27 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/get/totalsales', async (req, res) => {
+  const totalSales = await Order.aggregate([
+    // mongo는 _id 프로퍼티가 없이는 객체를 반환할 수 없다.
+    { $group: { _id: null, totalsales: { $sum: '$totalPrice' } } },
+  ]);
+
+  if (!totalSales) {
+    return res.status(400).send('판매 통계를 생성하지 못했습니다.');
+  }
+
+  res.send({ totalsales: totalSales.pop().totalsales });
+});
+
+router.get('/get/count', async (req, res) => {
+  const orderCount = await Order.countDocuments((count) => count);
+
+  if (!orderCount) {
+    return res.status(400).send('주문 수를 가져오지 못했습니다.');
+  }
+
+  res.send({ orderCount: orderCount });
+});
+
 module.exports = router;
